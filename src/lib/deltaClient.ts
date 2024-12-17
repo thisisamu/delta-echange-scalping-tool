@@ -1,5 +1,3 @@
-import WebSocket from 'ws';
-
 // Delta Exchange API configuration
 const DELTA_API_URL = 'https://api.delta.exchange/v2';
 const DELTA_WS_URL = 'wss://socket.delta.exchange';
@@ -10,6 +8,7 @@ export interface DeltaCredentials {
 }
 
 export const connectWebSocket = (onMessage: (data: any) => void) => {
+  // Using browser's native WebSocket instead of 'ws' package
   const ws = new WebSocket(DELTA_WS_URL);
 
   ws.onopen = () => {
@@ -29,12 +28,20 @@ export const connectWebSocket = (onMessage: (data: any) => void) => {
   };
 
   ws.onmessage = (event) => {
-    const data = JSON.parse(event.data.toString());
-    onMessage(data);
+    try {
+      const data = JSON.parse(event.data);
+      onMessage(data);
+    } catch (error) {
+      console.error('Error parsing WebSocket message:', error);
+    }
   };
 
   ws.onerror = (error) => {
     console.error('WebSocket error:', error);
+  };
+
+  ws.onclose = () => {
+    console.log('WebSocket connection closed');
   };
 
   return ws;
