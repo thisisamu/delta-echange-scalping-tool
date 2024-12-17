@@ -3,7 +3,6 @@ import PriceDisplay from "@/components/trading/PriceDisplay";
 import OrderForm from "@/components/trading/OrderForm";
 import PositionsPanel from "@/components/trading/PositionsPanel";
 import OrdersHistory from "@/components/trading/OrdersHistory";
-import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
@@ -11,7 +10,6 @@ const Index = () => {
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    // Initialize connection status
     setConnected(true);
     toast({
       title: "Connected to Delta Exchange",
@@ -30,21 +28,14 @@ const Index = () => {
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card className="p-4 col-span-1 lg:col-span-2">
+        <div className="lg:col-span-2 space-y-4">
           <PriceDisplay />
-        </Card>
-        <Card className="p-4">
-          <OrderForm />
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card className="p-4">
           <PositionsPanel />
-        </Card>
-        <Card className="p-4">
           <OrdersHistory />
-        </Card>
+        </div>
+        <div className="lg:col-span-1">
+          <OrderForm />
+        </div>
       </div>
     </div>
   );
