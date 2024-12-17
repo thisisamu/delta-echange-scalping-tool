@@ -16,22 +16,81 @@ const OrderForm = () => {
   const [quantity, setQuantity] = useState("");
   const [price, setPrice] = useState("");
 
-  const handleSubmit = async (side: "buy" | "sell") => {
-    try {
-      console.log("Order submitted:", { side, orderType, quantity, price });
-      
+  const placeOrder = async (side: "buy" | "sell") => {
+    const apiKey = localStorage.getItem("delta_api_key");
+    const apiSecret = localStorage.getItem("delta_api_secret");
+
+    if (!apiKey || !apiSecret) {
       toast({
-        title: "Order Submitted",
-        description: `${side.toUpperCase()} ${quantity} BTC at ${price || 'market price'}`,
+        title: "Error",
+        description: "Please configure your API credentials first",
+        variant: "destructive",
       });
-      
+      return;
+    }
+
+    if (!quantity) {
+      toast({
+        title: "Error",
+        description: "Please enter a quantity",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (orderType !== "market" && !price) {
+      toast({
+        title: "Error",
+        description: "Please enter a price for limit order",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const timestamp = Date.now();
+      const signature = await generateSignature(apiSecret, timestamp, {
+        side,
+        orderType,
+        quantity,
+        price,
+      });
+
+      const response = await fetch("https://api.delta.exchange/v2/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "api-key": apiKey,
+          "timestamp": timestamp.toString(),
+          "signature": signature,
+        },
+        body: JSON.stringify({
+          symbol: "BTC_USDT",
+          size: quantity,
+          type: orderType.toUpperCase(),
+          price: price || undefined,
+          side: side.toUpperCase(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        throw new Error(data.error.message || "Failed to place order");
+      }
+
+      toast({
+        title: "Order Placed",
+        description: `${side.toUpperCase()} ${quantity} BTC at ${price || "market price"}`,
+      });
+
       // Reset form
       setQuantity("");
       setPrice("");
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to submit order",
+        description: error instanceof Error ? error.message : "Failed to place order",
         variant: "destructive",
       });
     }
@@ -72,14 +131,14 @@ const OrderForm = () => {
 
       <div className="grid grid-cols-2 gap-2">
         <Button
-          onClick={() => handleSubmit("buy")}
+          onClick={() => placeOrder("buy")}
           className="bg-positive hover:bg-positive/90 text-white font-semibold"
           size="lg"
         >
           Buy / Long
         </Button>
         <Button
-          onClick={() => handleSubmit("sell")}
+          onClick={() => placeOrder("sell")}
           className="bg-negative hover:bg-negative/90 text-white font-semibold"
           size="lg"
         >
@@ -88,6 +147,32 @@ const OrderForm = () => {
       </div>
     </Card>
   );
+};
+
+// Helper function to generate signature for Delta Exchange API
+const generateSignature = async (apiSecret: string, timestamp: number, params: any) => {
+  const message = timestamp + JSON.stringify(params);
+  const encoder = new TextEncoder();
+  const data = encoder.encode(message);
+  const key = encoder.encode(apiSecret);
+  
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    key,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  
+  const signature = await crypto.subtle.sign(
+    'HMAC',
+    cryptoKey,
+    data
+  );
+  
+  return Array.from(new Uint8Array(signature))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
 };
 
 export default OrderForm;
