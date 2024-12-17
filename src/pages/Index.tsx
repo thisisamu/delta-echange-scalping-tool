@@ -5,11 +5,8 @@ import PositionsPanel from "@/components/trading/PositionsPanel";
 import OrdersHistory from "@/components/trading/OrdersHistory";
 import SettingsPanel from "@/components/trading/SettingsPanel";
 import { useToast } from "@/components/ui/use-toast";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card";
 import { Settings, ChartLine, AlertTriangle } from "lucide-react";
-import TradingVolume from "@/components/trading/TradingVolume";
-import MarketDepth from "@/components/trading/MarketDepth";
+import LiveChart from "@/components/trading/LiveChart";
 import PriceAlerts from "@/components/trading/PriceAlerts";
 
 const Index = () => {
@@ -57,37 +54,20 @@ const Index = () => {
       {showSettings && <SettingsPanel />}
 
       <div className="grid grid-cols-12 gap-4">
-        {/* Left Column - Price and Charts */}
         <div className="col-span-12 lg:col-span-8 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <PriceDisplay />
             <PriceAlerts />
           </div>
           
-          <Card className="p-4">
-            <Tabs defaultValue="depth" className="w-full">
-              <TabsList className="w-full">
-                <TabsTrigger value="depth">Market Depth</TabsTrigger>
-                <TabsTrigger value="volume">Trading Volume</TabsTrigger>
-              </TabsList>
-              <TabsContent value="depth">
-                <MarketDepth />
-              </TabsContent>
-              <TabsContent value="volume">
-                <TradingVolume />
-              </TabsContent>
-            </Tabs>
-          </Card>
+          <LiveChart />
 
           <PositionsPanel />
         </div>
 
-        {/* Right Column - Order Form and History */}
         <div className="col-span-12 lg:col-span-4 space-y-4">
           <OrderForm />
-          <Card className="p-4">
-            <OrdersHistory />
-          </Card>
+          <OrdersHistory />
         </div>
       </div>
     </div>
