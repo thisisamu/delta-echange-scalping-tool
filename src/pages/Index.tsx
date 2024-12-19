@@ -54,6 +54,11 @@ const Index = () => {
       {showSettings && <SettingsPanel />}
 
       <div className="grid grid-cols-12 gap-4">
+        {/* Positions Panel - Now at the top with increased prominence */}
+        <div className="col-span-12 mb-6">
+          <PositionsPanel />
+        </div>
+
         <div className="col-span-12 lg:col-span-8 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <PriceDisplay />
@@ -61,8 +66,6 @@ const Index = () => {
           </div>
           
           <LiveChart />
-
-          <PositionsPanel />
         </div>
 
         <div className="col-span-12 lg:col-span-4 space-y-4">
